@@ -46,7 +46,6 @@
 #define MB_PDU_FUNC_FILE_REC_NUM_OFF    ( MB_PDU_DATA_OFF + 3 )
 #define MB_PDU_FUNC_FILE_REC_LEN_OFF    ( MB_PDU_DATA_OFF + 5 )
 #define MB_PDU_FUNC_FILE_DATA_OFF       ( MB_PDU_DATA_OFF + 7 )
-#define MB_PDU_SIZE_MIN                 ( 7 )	// for a 0 length check
 
 #define MB_PDU_FUNC_FILE_REF_TYPE       ( 6 )
 
@@ -67,7 +66,7 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
     eMBException    eStatus = MB_EX_NONE;
     eMBErrorCode    eRegStatus;
 
-    if ( *usLen >= ( MB_PDU_SIZE_MIN ) )
+    if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
     {
         ucRefType = pucFrame[MB_PDU_FUNC_FILE_REF_TYPE_OFF];
         usFileNum = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF] << 8 );
@@ -108,7 +107,7 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
     eMBException    eStatus = MB_EX_NONE;
     eMBErrorCode    eRegStatus;
 
-    if ( *usLen >= ( MB_PDU_SIZE_MIN ) )
+    if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
     {
         ucRefType = pucFrame[MB_PDU_FUNC_FILE_REF_TYPE_OFF];
         usFileNum = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF] << 8 );
