@@ -22,6 +22,7 @@
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
 
+
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
@@ -81,3 +82,10 @@ vMBPortTimersDisable(  )
 {
     bTimeoutEnable = FALSE;
 }
+
+void
+vMBPortTimersDelay(USHORT usTimeOutMS)
+{
+	Sleep(usTimeOutMS);
+}
+
