@@ -41,11 +41,14 @@
 #include "mbconfig.h"
 
 /* ----------------------- Defines ------------------------------------------*/
-#define MB_PDU_FUNC_FILE_REF_TYPE_OFF   ( MB_PDU_DATA_OFF + 0 )
-#define MB_PDU_FUNC_FILE_NUM_OFF        ( MB_PDU_DATA_OFF + 1 )
-#define MB_PDU_FUNC_FILE_REC_NUM_OFF    ( MB_PDU_DATA_OFF + 3 )
-#define MB_PDU_FUNC_FILE_REC_LEN_OFF    ( MB_PDU_DATA_OFF + 5 )
-#define MB_PDU_FUNC_FILE_DATA_OFF       ( MB_PDU_DATA_OFF + 7 )
+#define MB_PDU_FUNC_FILE_FRAME_LEN_OFF  ( MB_PDU_DATA_OFF )
+#define MB_PDU_FUNC_FILE_REF_TYPE_OFF   ( MB_PDU_DATA_OFF + 1 )
+#define MB_PDU_FUNC_FILE_NUM_OFF        ( MB_PDU_DATA_OFF + 2 )
+#define MB_PDU_FUNC_FILE_REC_NUM_OFF    ( MB_PDU_DATA_OFF + 4 )
+#define MB_PDU_FUNC_FILE_REC_LEN_OFF    ( MB_PDU_DATA_OFF + 6 )
+#define MB_PDU_FUNC_FILE_DATA_OFF       ( MB_PDU_DATA_OFF + 8 )
+
+#define MB_PDU_FUNC_FILE_MIN_SIZE       ( 9 )
 
 #define MB_PDU_FUNC_FILE_REF_TYPE       ( 6 )
 
@@ -61,6 +64,7 @@ eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 eMBException
 eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
 {
+    UCHAR           ucFrameLen;
     UCHAR           ucRefType;
     USHORT          usFileNum;
     USHORT          usFileRec;
@@ -68,8 +72,9 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
     eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
-    if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
+    if ( *usLen >= MB_PDU_FUNC_FILE_MIN_SIZE )
     {
+        ucFrameLen = pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF];
         ucRefType = pucFrame[MB_PDU_FUNC_FILE_REF_TYPE_OFF];
         usFileNum = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF] << 8 );
         usFileNum |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF + 1] );
@@ -78,6 +83,7 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
+        // TODO ucFrameLen
         if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
         {
             /* Make callback to update the value. */
@@ -107,6 +113,7 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
 eMBException
 eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
 {
+    UCHAR           ucFrameLen;
     UCHAR           ucRefType;
     USHORT          usFileNum;
     USHORT          usFileRec;
@@ -114,8 +121,9 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
     eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
-    if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
+    if ( *usLen == MB_PDU_FUNC_FILE_DATA_OFF )
     {
+        ucFrameLen = pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF];
         ucRefType = pucFrame[MB_PDU_FUNC_FILE_REF_TYPE_OFF];
         usFileNum = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF] << 8 );
         usFileNum |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_NUM_OFF + 1] );
@@ -124,6 +132,7 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
+        // TODO ucFrameLen
         if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
         {
             /* Make callback to update the value. */
@@ -132,6 +141,9 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
 
             if ( eRegStatus == MB_ENOERR )
             {
+                *usLen += ( usFileRecLen * 2 );
+                pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF] += ( usFileRecLen * 2 );
+                
                 eStatus = MB_EX_NONE;
             }
             else
