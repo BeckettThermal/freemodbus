@@ -49,6 +49,8 @@
 
 #define MB_PDU_FUNC_FILE_REF_TYPE       ( 6 )
 
+#define MB_PDU_FUNC_FILE_MAX_LEN        ( MB_PDU_SIZE_MAX - 1 )
+
 /* ----------------------- Static functions ---------------------------------*/
 eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
@@ -63,7 +65,7 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
     USHORT          usFileNum;
     USHORT          usFileRec;
     USHORT          usFileRecLen;
-    eMBException    eStatus = MB_EX_NONE;
+    eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
     if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
@@ -76,21 +78,26 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
-        /* Make callback to update the value. */
-        eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
-                                   usFileRec, usFileRecLen, MB_REG_WRITE );
-
-        /* If an error occured convert it into a Modbus exception. */
-        if ( eRegStatus != MB_ENOERR )
+        if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
         {
-            eStatus = prveMBError2Exception( eRegStatus );
+            /* Make callback to update the value. */
+            eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
+                                       usFileRec, usFileRecLen, MB_REG_WRITE );
+
+            if ( eRegStatus == MB_ENOERR )
+            {
+                eStatus = MB_EX_NONE;
+            }
+            else
+            {
+                /* If an error occured convert it into a Modbus exception. */
+                eStatus = prveMBError2Exception( eRegStatus );
+            }
         }
+        /* else Record length too long - default status illegal data value. */
     }
-    else
-    {
-        /* Can't be a valid request because the length is incorrect. */
-        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
-    }
+    /* else Frame length too short - default status illegal data value. */
+    
     return eStatus;
 }
 #endif
@@ -104,7 +111,7 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
     USHORT          usFileNum;
     USHORT          usFileRec;
     USHORT          usFileRecLen;
-    eMBException    eStatus = MB_EX_NONE;
+    eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
     if ( *usLen >= MB_PDU_FUNC_FILE_DATA_OFF )
@@ -117,21 +124,26 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
-        /* Make callback to update the value. */
-        eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
-                                   usFileRec, usFileRecLen, MB_REG_READ );
-
-        /* If an error occured convert it into a Modbus exception. */
-        if ( eRegStatus != MB_ENOERR )
+        if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
         {
-            eStatus = prveMBError2Exception( eRegStatus );
+            /* Make callback to update the value. */
+            eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
+                                       usFileRec, usFileRecLen, MB_REG_READ );
+
+            if ( eRegStatus == MB_ENOERR )
+            {
+                eStatus = MB_EX_NONE;
+            }
+            else
+            {
+                /* An error occured - convert it into a Modbus exception. */
+                eStatus = prveMBError2Exception( eRegStatus );
+            }
         }
+        /* else Record length too long - default status illegal data value. */
     }
-    else
-    {
-        /* Can't be a valid request because the length is incorrect. */
-        eStatus = MB_EX_ILLEGAL_DATA_VALUE;
-    }
+    /* else Frame length too short - default status illegal data value. */
+
     return eStatus;
 }
 
