@@ -169,3 +169,9 @@ vMBPortLog( eMBPortLogLevel eLevel, const TCHAR * szModule, const TCHAR * szFmt,
     _vftprintf( stderr, szFmt, args );
     va_end( args );
 }
+
+void
+vMBPortTimersDelay(USHORT usTimeOutMS)
+{
+	Sleep(usTimeOutMS);
+}
