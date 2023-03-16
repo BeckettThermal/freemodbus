@@ -48,11 +48,12 @@
 #define MB_PDU_FUNC_FILE_REC_LEN_OFF    ( MB_PDU_DATA_OFF + 6 )
 #define MB_PDU_FUNC_FILE_DATA_OFF       ( MB_PDU_DATA_OFF + 8 )
 
-#define MB_PDU_FUNC_FILE_MIN_SIZE       ( 9 )
+#define MB_PDU_FUNC_FILE_OVERHEAD       ( 7 )
+#define MB_PDU_FUNC_FILE_MIN_SIZE       ( MB_PDU_FUNC_FILE_OVERHEAD + 2 )
 
 #define MB_PDU_FUNC_FILE_REF_TYPE       ( 6 )
 
-#define MB_PDU_FUNC_FILE_MAX_LEN        ( MB_PDU_SIZE_MAX - 1 )
+#define MB_PDU_FUNC_FILE_MAX_LEN        ( MB_PDU_SIZE_MAX - MB_PDU_FUNC_FILE_OVERHEAD )
 
 /* ----------------------- Static functions ---------------------------------*/
 eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
@@ -69,6 +70,7 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
     USHORT          usFileNum;
     USHORT          usFileRec;
     USHORT          usFileRecLen;
+    USHORT          usFileByteLen;
     eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
@@ -83,10 +85,13 @@ eMBFuncWriteFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
-        // TODO ucFrameLen
-        if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
+        usFileByteLen = usFileRecLen * 2;
+
+        /* TODO - allow multiple writes per request (as per spec) */
+        if ( (usFileByteLen <= MB_PDU_FUNC_FILE_MAX_LEN)
+            && ( ucFrameLen == (MB_PDU_FUNC_FILE_OVERHEAD + usFileByteLen) ) )
         {
-            /* Make callback to update the value. */
+            /* Make callback to write the records */
             eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
                                        usFileRec, usFileRecLen, MB_REG_WRITE );
 
@@ -118,9 +123,12 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
     USHORT          usFileNum;
     USHORT          usFileRec;
     USHORT          usFileRecLen;
+    USHORT          usFileByteLen;
     eMBException    eStatus = MB_EX_ILLEGAL_DATA_VALUE;
     eMBErrorCode    eRegStatus;
 
+    /* TODO - allow for multiple reads per requests (per standard) */
+    /* For now only a single read is permitted per request */
     if ( *usLen == MB_PDU_FUNC_FILE_DATA_OFF )
     {
         ucFrameLen = pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF];
@@ -132,17 +140,18 @@ eMBFuncReadFileRecord( UCHAR * pucFrame, USHORT * usLen )
         usFileRecLen = ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF] << 8 );
         usFileRecLen |= ( USHORT )( pucFrame[MB_PDU_FUNC_FILE_REC_LEN_OFF + 1] );
 
-        // TODO ucFrameLen
-        if ( (usFileRecLen / 2) <= MB_PDU_FUNC_FILE_MAX_LEN )
+        usFileByteLen = usFileRecLen * 2;
+
+        if ( (usFileByteLen <= MB_PDU_FUNC_FILE_MAX_LEN) && (MB_PDU_FUNC_FILE_OVERHEAD == ucFrameLen) )
         {
-            /* Make callback to update the value. */
+            /* Make callback to read the records. */
             eRegStatus = eMBRegFileCB( &pucFrame[MB_PDU_FUNC_FILE_DATA_OFF], usFileNum,
                                        usFileRec, usFileRecLen, MB_REG_READ );
 
             if ( eRegStatus == MB_ENOERR )
             {
                 *usLen += ( usFileRecLen * 2 );
-                pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF] += ( usFileRecLen * 2 );
+                pucFrame[MB_PDU_FUNC_FILE_FRAME_LEN_OFF] = MB_PDU_FUNC_FILE_OVERHEAD + ( usFileRecLen * 2 );
                 
                 eStatus = MB_EX_NONE;
             }
