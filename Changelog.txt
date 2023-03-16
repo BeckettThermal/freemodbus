@@ -1,3 +1,7 @@
+2023-03 Michael Curry <michael.curry@volution-group.com>
+  - FEATURES (ALL) : Added single sub-request file read/write request handling 
+                     in mbfuncfile.c and moved mbconfig.h out of common code.
+
 2018-09-13 (REL_1_6_0) Christian Walter <cwalter@embedded-solutions.at>
  Notes: Changed licensing for mbfuncdisc.c. Updating licensing info
   and contact details in core stack.
@@ -29,7 +33,7 @@
 
 2007-07-17 (REL_1_3_0) Christian Walter <wolti@sil.at>:
  Notes: Added Linux/TCP port. Fixed bug in MSP430 port.
- Detailted notes:
+ Detailed notes:
   - FEATURE (LINUX): Added Linux/TCP port.
   - BUGS (MSP430): Fixed bug with calculating the timer value.
 
@@ -70,7 +74,7 @@
    the registers addresses where calculated wrong.
    Fixed bug in RTU and ASCII with the resource allocation in case of
    an error. 
-   Changed license to BSD style licsense.
+   Changed license to BSD style license.
 
  Detailed notes:
    - OTHER (ALL): License is now BSD for protocol stack.
@@ -114,7 +118,7 @@
       depend on the Rowley Crosswork tools.
    - FEATURE (ALL): eMBDisable can now be called multiple times
       and returns MB_ENOERR in case is was already disabled. 
-      eMBClose also supports beeing called multiple times in 
+      eMBClose also supports being called multiple times in 
       which pvMBFrameCloseCur( ) is called when the protocol stack
       is in state STATE_DISABLED.
    - BUG (RTU): Fixed bug in xMBRTUReceiveFSM where the error
@@ -153,7 +157,7 @@
 2006-09-06 (REL_1_0_2) Christian Walter <wolti@sil.at>:
  Notes: Fixed bug in FreeRTOS porting layer for STR71X/lwIP target where
    memory is not freed in the sys_arch_thread_remove function. 
-   Synched MCF5235TCP port with the FreeRTOS/lwIP port for the STR71X.
+   Synced MCF5235TCP port with the FreeRTOS/lwIP port for the STR71X.
 
  Detailed notes:
    - BUG (STR71XTCP): Sys_arch_thread_remove did not free the memory from
@@ -190,7 +194,7 @@
    - FEATURES (STR71XTCP): implemented function in STR71X/lwIP porting layer
        to remove running tasks.
    - FEATURES (STR71XTCP): added new thread creation function in STR71X/lwIP
-       porting layer which allows specifing the stack size.
+       porting layer which allows specifying the stack size.
    - BUGS (STR71XTCP): pppOpen defined in ppp.c does not check the return 
        value of sys_thread_new. If task creation fails the system crashes.
    - BUGS (STR71XTCP): pppMain must not return - Instead it should remove 
@@ -202,7 +206,7 @@
    lwIP support.
         
  Detailed notes:
-   - FEATURES: Incoperated MCF5235 FreeRTOS/lwIP port done by the 
+   - FEATURES: Incorporated MCF5235 FreeRTOS/lwIP port done by the 
        author in this project.
    - FEATURES: Added lwIP port for FreeModbus
    - FEATURES: Added demo application for FreeModbus and lwIP.
@@ -319,7 +323,7 @@
    coil registers and add some bug fixes.
    
  Detailed notes:
-  - BUG: fixed bug with to small modbus requests being ignored.
+  - BUG: fixed bug with to small Modbus requests being ignored.
   - FEATURES: added support for write single coil function.
   - FEATURES: added support for working with byte packed bit fields
      to support coils and discrete inputs better.
