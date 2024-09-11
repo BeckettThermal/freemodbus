@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "mb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,7 +67,7 @@ static void MX_USART2_UART_Init(void);
 int main(void) {
 
     /* USER CODE BEGIN 1 */
-    
+    eMBErrorCode mb_code;
     /* USER CODE END 1 */
     
     /* MCU Configuration--------------------------------------------------------*/
@@ -90,16 +90,19 @@ int main(void) {
     MX_GPIO_Init();
     MX_USART2_UART_Init();
     /* USER CODE BEGIN 2 */
-    
+    mb_code = eMBEnable();
     /* USER CODE END 2 */
     
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    while (1) {
+    while (mb_code == MB_ENOERR) {
         /* USER CODE END WHILE */
         
         /* USER CODE BEGIN 3 */
+        mb_code = eMBPoll();
     }
+    
+    for (;;);
     
     /* USER CODE END 3 */
 }
@@ -221,6 +224,40 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+/*
+ * Defined by modbus/mb.c
+eMBErrorCode eMBRegisterCB(UCHAR ucFunctionCode,
+                           pxMBFunctionHandler pxHandler) {
+}
+ *
+ */
+
+eMBErrorCode eMBRegInputCB(UCHAR *pucRegBuffer, USHORT usAddress,
+                           USHORT usNRegs) {
+    return MB_ENOERR;
+}
+
+eMBErrorCode eMBRegHoldingCB(UCHAR *pucRegBuffer, USHORT usAddress,
+                             USHORT usNRegs, eMBRegisterMode eMode) {
+    return MB_ENOERR;
+}
+
+eMBErrorCode eMBRegCoilsCB(UCHAR *pucRegBuffer, USHORT usAddress,
+                           USHORT usNCoils, eMBRegisterMode eMode) {
+    return MB_ENOERR;
+}
+
+eMBErrorCode eMBRegDiscreteCB(UCHAR *pucRegBuffer, USHORT usAddress,
+                              USHORT usNDiscrete) {
+    return MB_ENOERR;
+}
+
+eMBErrorCode eMBRegFileCB(UCHAR *pucFileBuffer, USHORT usFileNumber,
+                          USHORT usRecordNumber, USHORT usRecordLength,
+                          eMBRegisterMode eMode) {
+    return MB_ENOERR;
+}
 
 /* USER CODE END 4 */
 

@@ -59,6 +59,25 @@ Core/Src/system_stm32c0xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c  
 
+MBPORTOBJECTS = \
+port/portserial.o \
+port/portevent.o \
+port/porttimer.o
+
+MBOBJECTS = \
+../../modbus/mb.o \
+../../modbus/rtu/mbrtu.o \
+../../modbus/rtu/mbcrc.o \
+../../modbus/ascii/mbascii.o \
+../../modbus/functions/mbfunccoils.o \
+../../modbus/functions/mbfuncdiag.o \
+../../modbus/functions/mbfuncholding.o \
+../../modbus/functions/mbfuncinput.o \
+../../modbus/functions/mbfuncother.o \
+../../modbus/functions/mbfuncdisc.o \
+../../modbus/functions/mbfuncfile.o \
+../../modbus/functions/mbutils.o
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32c031xx.s
@@ -123,11 +142,17 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32C0xx/Include \
 -IDrivers/CMSIS/Include
 
+MB_INCLUDES = \
+-I../../modbus/rtu \
+-I../../modbus/ascii \
+-I../../modbus/include \
+-I. \
+-Iport
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(MB_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -159,6 +184,7 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+OBJECTS += $(MBPORTOBJECTS) $(MBOBJECTS)
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
