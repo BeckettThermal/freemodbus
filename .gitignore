@@ -1,0 +1,4 @@
+*.orig # astyle artifacts
+*.d    # make artifacts
+*.o    # compiler object files
+build/ # build directory
