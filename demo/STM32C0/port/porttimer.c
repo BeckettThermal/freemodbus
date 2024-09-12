@@ -21,7 +21,7 @@
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
-#include "stm32c0xx_hal.h"
+#include "tim.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -32,11 +32,13 @@ static void prvvTIMERExpiredISR(void);
 
 /* ----------------------- Start implementation -----------------------------*/
 BOOL xMBPortTimersInit(USHORT usTim1Timerout50us) {
-    return HAL_OK == MX_TIM1_Init();
+    MX_TIM1_Init();
+    return TRUE;
 }
 
 inline void vMBPortTimersEnable() {
     /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
+    HAL_TIM_Base_Start_IT(&htim1);
 }
 
 inline void vMBPortTimersDisable() {

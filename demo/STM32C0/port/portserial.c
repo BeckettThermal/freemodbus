@@ -20,7 +20,7 @@
  */
 
 #include "port.h"
-#include "stm32c0xx_hal.h"
+#include "usart.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -39,7 +39,8 @@ void vMBPortSerialEnable(BOOL xRxEnable, BOOL xTxEnable) {
 
 BOOL xMBPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,
                        eMBParity eParity) {
-    return HAL_OK == MX_USART2_UART_Init();
+    MX_USART2_UART_Init();
+    return TRUE;
 }
 
 BOOL xMBPortSerialPutByte(CHAR ucByte) {
