@@ -235,28 +235,71 @@ eMBErrorCode eMBRegisterCB(UCHAR ucFunctionCode,
 
 eMBErrorCode eMBRegInputCB(UCHAR *pucRegBuffer, USHORT usAddress,
                            USHORT usNRegs) {
-    return MB_ENOERR;
+    const UCHAR TEST_INPUT = 0xA5;
+    eMBErrorCode mb_code = MB_ENOERR;
+    
+    if (usAddress < 1) { mb_code = MB_ENOREG; }
+    
+    if ((usAddress + usNRegs - 1) > UINT16_MAX) { mb_code = MB_ENOREG; }
+    
+    if (MB_ENOERR == mb_code) {
+        ///@todo Review https://github.com/VolutionGroup/freemodbus
+        /// Commented-out code is from demo/WIN32TCP/demo.cpp#L295
+        // iRegIndex = ( int )( usAddress - usRegInputStart );
+        while (usNRegs > 0) {
+            *pucRegBuffer++ = TEST_INPUT; // (UCHAR)(usRegInputBuf[iRegIndex] >> 8);
+            *pucRegBuffer++ = (UCHAR)
+                              ~TEST_INPUT; // (UCHAR)(usRegInputBuf[iRegIndex] & 0xFF);
+            // iRegIndex++;
+            usNRegs--;
+        }
+    }
+    
+    ///@todo Add cases for MB_ETIMEDOUT and MB_EIO
+    return mb_code;
 }
 
 eMBErrorCode eMBRegHoldingCB(UCHAR *pucRegBuffer, USHORT usAddress,
                              USHORT usNRegs, eMBRegisterMode eMode) {
-    return MB_ENOERR;
+    eMBErrorCode mb_code = MB_ENOERR;
+    
+    if (MB_REG_READ == eMode) { mb_code = eMBRegInputCB(pucRegBuffer, usAddress, usNRegs); }
+    else { /* Stub of writing without error */ }
+    
+    return mb_code;
 }
 
 eMBErrorCode eMBRegCoilsCB(UCHAR *pucRegBuffer, USHORT usAddress,
                            USHORT usNCoils, eMBRegisterMode eMode) {
-    return MB_ENOERR;
+    return eMBRegHoldingCB(pucRegBuffer, usAddress, usNCoils, eMode);
 }
 
 eMBErrorCode eMBRegDiscreteCB(UCHAR *pucRegBuffer, USHORT usAddress,
                               USHORT usNDiscrete) {
-    return MB_ENOERR;
+    const UCHAR TEST_DISCRETE = 0x01;
+    eMBErrorCode mb_code = MB_ENOERR;
+    
+    if (usAddress < 1) { mb_code = MB_ENOREG; }
+    
+    if ((usAddress + usNDiscrete - 1) > UINT16_MAX) { mb_code = MB_ENOREG; }
+    
+    if (MB_ENOERR == mb_code) {
+        while (usNDiscrete > 0) {
+            *pucRegBuffer++ = TEST_DISCRETE; // (UCHAR)(usRegInputBuf[iRegIndex] >> 8);
+            *pucRegBuffer++ = ~TEST_DISCRETE; // (UCHAR)(usRegInputBuf[iRegIndex] & 0xFF);
+            // iRegIndex++;
+            usNDiscrete--;
+        }
+    }
+    
+    ///@todo Add cases for MB_ETIMEDOUT and MB_EIO
+    return mb_code;
 }
 
 eMBErrorCode eMBRegFileCB(UCHAR *pucFileBuffer, USHORT usFileNumber,
                           USHORT usRecordNumber, USHORT usRecordLength,
                           eMBRegisterMode eMode) {
-    return MB_ENOERR;
+    return MB_ENOREG;
 }
 
 /* USER CODE END 4 */
