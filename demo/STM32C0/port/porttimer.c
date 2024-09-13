@@ -22,6 +22,7 @@
 /* ----------------------- Platform includes --------------------------------*/
 #include "port.h"
 #include "tim.h"
+#include "gpio.h"
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -29,11 +30,12 @@
 
 /* ----------------------- static functions ---------------------------------*/
 static void prvvTIMERExpiredISR(void);
-
+static void tim_period_elapsed(TIM_HandleTypeDef *htim);
 /* ----------------------- Start implementation -----------------------------*/
 BOOL xMBPortTimersInit(USHORT usTim1Timerout50us) {
     MX_TIM1_Init();
-    return TRUE;
+    return HAL_OK == HAL_TIM_RegisterCallback(&htim1, HAL_TIM_PERIOD_ELAPSED_CB_ID,
+            tim_period_elapsed);
 }
 
 inline void vMBPortTimersEnable() {
@@ -43,6 +45,7 @@ inline void vMBPortTimersEnable() {
 
 inline void vMBPortTimersDisable() {
     /* Disable any pending timers. */
+    HAL_TIM_Base_Stop_IT(&htim1);
 }
 
 /* Create an ISR which is called whenever the timer has expired. This function
@@ -51,4 +54,9 @@ inline void vMBPortTimersDisable() {
  */
 static void prvvTIMERExpiredISR(void) {
     (void)pxMBPortCBTimerExpired();
+}
+
+static void tim_period_elapsed(TIM_HandleTypeDef *htim) {
+    prvvTIMERExpiredISR();
+    HAL_GPIO_TogglePin(Led_GPIO_Port, Led_Pin);
 }
