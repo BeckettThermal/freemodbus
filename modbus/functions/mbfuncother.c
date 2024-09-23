@@ -79,8 +79,14 @@ eMBSetSlaveID( UCHAR ucSlaveID, BOOL xIsRunning,
 eMBException
 eMBFuncReportSlaveID( UCHAR * pucFrame, USHORT * usLen )
 {
-    memcpy( &pucFrame[MB_PDU_DATA_OFF], &ucMBSlaveID[0], ( size_t )usMBSlaveIDLen );
-    *usLen = ( USHORT )( MB_PDU_DATA_OFF + usMBSlaveIDLen );
+    /* First byte contains the function code. Reuse it from old values in the buffer */
+    /* Second byte in the response contain the number of bytes. */
+    pucFrame[MB_PDU_DATA_OFF] = usMBSlaveIDLen;
+    /* The reset is the content of the ucMBSlaveID */
+    memcpy( &pucFrame[MB_PDU_DATA_OFF + 1], &ucMBSlaveID[0], ( size_t )usMBSlaveIDLen );
+    /* The response contains the function code, length of the reponse payload
+     * and the payload bytes. */
+    *usLen = ( USHORT )( MB_PDU_DATA_OFF + 1 + usMBSlaveIDLen );
     return MB_EX_NONE;
 }
 
