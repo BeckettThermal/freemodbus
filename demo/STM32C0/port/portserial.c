@@ -29,18 +29,26 @@
 /* ----------------------- static functions ---------------------------------*/
 static void prvvUARTTxReadyISR(void);
 static void prvvUARTRxISR(void);
-
+static void uart_tx_ready(UART_HandleTypeDef *huart);
+static void uart_rx_complete(UART_HandleTypeDef *huart);
 /* ----------------------- Start implementation -----------------------------*/
 void vMBPortSerialEnable(BOOL xRxEnable, BOOL xTxEnable) {
     /* If xRXEnable enable serial receive interrupts. If xTxENable enable
      * transmitter empty interrupts.
      */
+    
 }
 
 BOOL xMBPortSerialInit(UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits,
                        eMBParity eParity) {
     MX_USART2_UART_Init();
-    return TRUE;
+    
+    BOOL tx_cb_ok = (HAL_OK == HAL_UART_RegisterCallback(&huart2,
+                     HAL_UART_TX_COMPLETE_CB_ID, uart_tx_ready));
+    BOOL rx_cb_ok = (HAL_OK == HAL_UART_RegisterCallback(&huart2,
+                     HAL_UART_RX_COMPLETE_CB_ID, uart_rx_complete));
+                     
+    return tx_cb_ok && rx_cb_ok;
 }
 
 BOOL xMBPortSerialPutByte(CHAR ucByte) {
@@ -64,6 +72,14 @@ BOOL xMBPortSerialGetByte(CHAR *pucByte) {
  * xMBPortSerialPutByte( ) to send the character.
  */
 static void prvvUARTTxReadyISR(void) {
+    static uint8_t count = 0;
+    
+    if (count < 10) {
+        (void)xMBPortSerialPutByte('a');
+    } else {
+        vMBPortSerialEnable(FALSE, FALSE);
+    }
+    
     pxMBFrameCBTransmitterEmpty();
 }
 
@@ -74,4 +90,12 @@ static void prvvUARTTxReadyISR(void) {
  */
 static void prvvUARTRxISR(void) {
     pxMBFrameCBByteReceived();
+}
+
+static void uart_tx_ready(UART_HandleTypeDef *huart) {
+    prvvUARTTxReadyISR();
+}
+
+static void uart_rx_complete(UART_HandleTypeDef *huart) {
+    prvvUARTRxISR();
 }

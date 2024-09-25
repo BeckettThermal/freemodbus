@@ -94,6 +94,8 @@ int main(void) {
     xMBPortTimersInit(0);
     vMBPortTimersEnable();
     mb_code = eMBEnable();
+    (void)xMBPortSerialInit(0, 0, 0, 0); // Always returns TRUE.
+    vMBPortSerialEnable(TRUE, TRUE);
     /* USER CODE END 2 */
     
     /* Infinite loop */
