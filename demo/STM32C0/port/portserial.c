@@ -55,7 +55,10 @@ BOOL xMBPortSerialPutByte(CHAR ucByte) {
     /* Put a byte in the UARTs transmit buffer. This function is called
      * by the protocol stack if pxMBFrameCBTransmitterEmpty( ) has been
      * called. */
-    return TRUE;
+    const uint8_t data = ucByte;
+    const uint16_t bytes = 1;
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, &data, bytes, 100);
+    return HAL_OK == status;
 }
 
 BOOL xMBPortSerialGetByte(CHAR *pucByte) {

@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
+#include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,7 +49,6 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -65,6 +66,7 @@ int main(void) {
 
     /* USER CODE BEGIN 1 */
     eMBErrorCode mb_code;
+    uint32_t last_tick = HAL_GetTick();
     /* USER CODE END 1 */
     
     /* MCU Configuration--------------------------------------------------------*/
@@ -85,6 +87,7 @@ int main(void) {
     
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+    MX_I2C1_Init();
     
     /* USER CODE BEGIN 2 */
     if (eMBInit(MB_RTU, 10, 1, 19200, MB_PAR_NONE) != MB_ENOERR) {
@@ -105,7 +108,11 @@ int main(void) {
         
         /* USER CODE BEGIN 3 */
         mb_code = eMBPoll();
-        HAL_Delay(5000);
+        
+        if (HAL_GetTick() - last_tick > 10) {
+            last_tick = HAL_GetTick();
+            xMBPortSerialPutByte(0x55);
+        }
     }
     
     for (;;);
@@ -143,54 +150,6 @@ void SystemClock_Config(void) {
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
         Error_Handler();
     }
-}
-
-/**
-  * @brief GPIO Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_GPIO_Init(void) {
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    /* USER CODE BEGIN MX_GPIO_Init_1 */
-    /* USER CODE END MX_GPIO_Init_1 */
-    
-    /* GPIO Ports Clock Enable */
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOF_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    
-    /*Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(Led_GPIO_Port, Led_Pin, GPIO_PIN_SET);
-    
-    /*Configure GPIO pin : User_Button_Pin */
-    GPIO_InitStruct.Pin = User_Button_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(User_Button_GPIO_Port, &GPIO_InitStruct);
-    
-    /*Configure GPIO pin : Led_Pin */
-    GPIO_InitStruct.Pin = Led_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    HAL_GPIO_Init(Led_GPIO_Port, &GPIO_InitStruct);
-    
-    /*Configure GPIO pins : PB8 PB9 */
-    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF6_I2C1;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    
-    /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(EXTI4_15_IRQn, 3, 0);
-    HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
-    
-    /* USER CODE BEGIN MX_GPIO_Init_2 */
-    /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
